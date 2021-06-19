@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from threading import Timer
 
 BOT = TeleBot("BOT_TOKEN")
+WEBSITE = 'http://kompli.me/komplimenty-devushke'
 
 
 def send_compliment():
@@ -13,17 +14,16 @@ def send_compliment():
 
 
 def get_random_compliment():
-    random_page_number = str(randint(1, 42))
-    webpage = get('http://kompli.me/komplimenty-devushke/page/' + random_page_number).text
-    tags = BeautifulSoup(webpage, 'html.parser').find_all('a')
-    compliments = []
-    for tag in tags:
-        tag_text = tag.get_text()
-        if tag_text == 'Назад':
-            break
-        compliments.append(tag_text)
+    tags_of_page_numbers = BeautifulSoup(get(WEBSITE).text, 'html.parser').select('div.nav-links a')
+    count_of_page = tags_of_page_numbers[-2].text
 
-    return choice(compliments[4:])
+    random_page_number = str(randint(1, int(count_of_page)))
+    webpage = get(WEBSITE + '/page'+ random_page_number).text
+
+    tags = BeautifulSoup(webpage, 'html.parser').find_all('div', {"class": "post-card__title"})
+    compliments = [i.text for i in tags]
+
+    return choice(compliments)
 
 
-send_compliment()
+print(get_random_compliment())
